@@ -4,14 +4,14 @@ use anchor_spl::token_interface::TokenInterface;
 use crate::{state::Market, errors::BettingError};
 
 #[derive(Accounts)]
-#[instruction(params: MakeParams)]
+#[instruction(question: String)]
 pub struct Make<'info> {
     #[account(mut)]
     pub maker: Signer<'info>,
     #[account(
         init,
         payer = maker,
-        seeds = [b"marketplace", params.question.as_str().as_bytes()],
+        seeds = [b"market", question.as_str().as_bytes()],
         bump,
         space = Market::INIT_SPACE
     )]
@@ -26,15 +26,15 @@ pub struct Make<'info> {
 }
 
 impl<'info> Make<'info> {
-    pub fn make(&mut self, params: MakeParams, bumps: &MakeBumps) -> Result<()> {
+    pub fn make(&mut self, question: String, fees_bps: Option<u16>, close_unix: Option<i64>, bumps: &MakeBumps) -> Result<()> {
 
-        require!(params.question.len() > 0 && params.question.len() < 200, BettingError::QuestionTooLong);
+        require!(question.len() > 0 && question.len() < 200, BettingError::QuestionTooLong);
         
         self.market.set_inner(Market {
             maker: self.maker.key(),
-            question: params.question,
-            fee_bps: params.fee_bps,
-            close_unix: params.close_unix,
+            question: question,
+            fee_bps: fees_bps,
+            close_unix: close_unix,
             bump: bumps.market,
             treasury_bump: bumps.treasury,
         });

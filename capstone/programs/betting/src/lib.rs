@@ -1,5 +1,5 @@
 use anchor_lang::prelude::*;
-declare_id!("7K322wtkQcjgaGL58LiNdscgMRd9TwWqRjghLbAnSVVV");
+declare_id!("9C68oQe7KLvqDpm1FgP2vsZEsMXodd9qDEqvccbN1S9R");
 
 mod contexts;
 mod state;
@@ -11,7 +11,8 @@ use contexts::*;
 pub mod betting {
     use super::*;
 
-    pub fn make(ctx: Context<Make>) -> Result<()> {
+    pub fn make(ctx: Context<Make>, question: String, fees_bps: Option<u16>, close_unix: Option<i64>) -> Result<()> {
+        ctx.accounts.make(question, fees_bps, close_unix, &ctx.bumps)?;
         Ok(())
     }
 }

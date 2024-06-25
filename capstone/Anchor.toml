@@ -5,7 +5,7 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-capstone = "7K322wtkQcjgaGL58LiNdscgMRd9TwWqRjghLbAnSVVV"
+capstone = "9C68oQe7KLvqDpm1FgP2vsZEsMXodd9qDEqvccbN1S9R"
 
 [registry]
 url = "https://api.apr.dev"
