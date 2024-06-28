@@ -10,6 +10,8 @@ describe("capstone", () => {
 
   const program = anchor.workspace.Betting as Program<Betting>;
   const maker = anchor.web3.Keypair.generate();
+  const bettorA = anchor.web3.Keypair.generate();
+
 
   // ?? Switch to generating market id 
   const market = anchor.web3.PublicKey.findProgramAddressSync(
@@ -18,7 +20,7 @@ describe("capstone", () => {
   )[0];
 
   const treasury = anchor.web3.PublicKey.findProgramAddressSync([Buffer.from("treasury"), 
-    market.toBytes()], program.programId)[0];
+    market.toBuffer()], program.programId)[0];
   const systemProgram = anchor.web3.SystemProgram.programId
 
   before("Air drop to maker", async () => {
@@ -44,21 +46,40 @@ describe("capstone", () => {
     .signers([maker])
     .rpc();
     console.log("Your transaction signature", tx);
-    
+
     const marketState = await program.account.market.fetch(market);
     console.log("Market state", marketState);
   });
 
-  it("Calculate spot price", async () => {
+  // it("User A Place a bet yes", async () => {
+  //   const amount = new anchor.BN(1000000000);
+  //   const betState = anchor.web3.PublicKey.findProgramAddressSync([Buffer.from("betstate"), 
+  //     market.toBuffer(), bettorA.publicKey.toBuffer()], program.programId)[0];
+
+  //   const tx = await program.methods.placeBet(amount, true)
+  //   .accountsPartial({
+  //       bettor: bettorA.publicKey,
+  //       market,
+  //       betState,
+  //       treasury,
+  //       tokenProgram: TOKEN_PROGRAM_ID,
+  //       systemProgram,
+  //     }).
+  //     signers([bettorA]),
+  //   });
+  //   // console.log("User A balance", await program.provider.connection.getBalance(userA.publicKey));
+  // });
+
+  it("User A Place a bet no", async () => {
   });
 
-  it("Place a bet yes", async () => {
-  });
-
-  it("Place a bet no", async () => {
+  it("User B Place a bet yes", async () => {
   });
 
   it("Resolve bet", async () => {
+  });
+
+  it("Withdraw earnings", async () => {
   });
 
 

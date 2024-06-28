@@ -1,13 +1,14 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token_interface::TokenInterface;
 
-use crate::{state::Market, errors::BettingError};
+use crate::{state::{Market,BetState}, errors::BettingError};
 
 #[derive(Accounts)]
 #[instruction(question: String)]
 pub struct Make<'info> {
     #[account(mut)]
     pub maker: Signer<'info>,
+    // ?? refactor to use id as seed?
     #[account(
         init,
         payer = maker,
@@ -18,9 +19,10 @@ pub struct Make<'info> {
     pub market: Account<'info, Market>,
     #[account(
         seeds = [b"treasury", market.key().as_ref()],
-        bump,
+        bump
     )]
     pub treasury: SystemAccount<'info>,
+    pub bet_state: Account<'info, BetState>,
     pub system_program: Program<'info, System>,
     pub token_program: Interface<'info, TokenInterface>,
 }
@@ -41,11 +43,4 @@ impl<'info> Make<'info> {
 
         Ok(())
     }
-}
-
-#[derive(AnchorSerialize, AnchorDeserialize)]
-pub struct MakeParams {
-    question: String, 
-    fee_bps: Option<u16>, 
-    close_unix: Option<i64>, 
 }
