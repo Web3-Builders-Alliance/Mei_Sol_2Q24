@@ -5,15 +5,17 @@ mod contexts;
 mod state;
 mod errors;
 use contexts::*;
-// use state::*;
+// mod helpers;
 
 #[program]
 pub mod betting {
 
+    use anchor_lang::solana_program::pubkey;
+
     use super::*;
 
-    pub fn make(ctx: Context<Make>, question: String, fees_bps: Option<u16>, close_unix: Option<i64>) -> Result<()> {
-        ctx.accounts.make(question, fees_bps, close_unix, &ctx.bumps)?;
+    pub fn make(ctx: Context<Make>, question: String, fees_bps: Option<u16>, close_unix: Option<i64>, resolver: Pubkey) -> Result<()> {
+        ctx.accounts.make(question, fees_bps, close_unix, resolver, &ctx.bumps)?;
         Ok(())
     }
 

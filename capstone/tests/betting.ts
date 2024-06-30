@@ -13,9 +13,11 @@ describe("capstone", () => {
   const maker = anchor.web3.Keypair.generate();
   const bettorA = anchor.web3.Keypair.generate();
   const bettorB = anchor.web3.Keypair.generate();
+  const resolver = anchor.web3.Keypair.generate();
   console.log("Maker", maker.publicKey.toBase58());
   console.log("Bettor A", bettorA.publicKey.toBase58());
   console.log("Bettor B", bettorB.publicKey.toBase58());
+  console.log("Resolver", bettorB.publicKey.toBase58());
 
   // ?? Switch to generating market id
   const marketPda = anchor.web3.PublicKey.findProgramAddressSync(
@@ -58,7 +60,7 @@ describe("capstone", () => {
 
     // Call the make method
     const tx = await program.methods
-      .make("Test question", feeBps, closeUnix)
+      .make("Test question", feeBps, closeUnix, resolver.publicKey)
       .accountsPartial({
         maker: maker.publicKey,
         market: marketPda,

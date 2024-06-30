@@ -10,7 +10,4 @@ pub struct BetState {
 // 8 bytes for u64, 8 for anchor discriminator 
 impl Space for BetState {
     const INIT_SPACE: usize = 8 + 32 + 8 + 1 + 1;
-
-
-
 }

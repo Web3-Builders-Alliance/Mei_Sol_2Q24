@@ -5,7 +5,10 @@ pub enum BettingError {
     // Maybe this is better saved off-chain
     #[msg("The question is too long")]
     QuestionTooLong,
-    
     #[msg("Already placed a bet")]
     AlreadyPlacedBet,
+    #[msg("Invalid authority")]
+    InvalidAuthority,
+    #[msg("No authority set")]
+    NoAuthoritySet,
 }

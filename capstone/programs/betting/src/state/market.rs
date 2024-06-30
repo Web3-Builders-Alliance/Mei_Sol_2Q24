@@ -10,7 +10,10 @@ pub struct Market {
     // Set the limit to 200 bytes which should fit a simple q? 
     // Prob should save it offchain but this should work for now?
     pub question: String, 
+    pub resolver: Pubkey,
+    pub resolved_as_yes: Option<bool>,
 }
 
 impl Space for Market {
-    const INIT_SPACE: usize = 8 + (1 + 2) + (1 + 8) + 1 + 1 + (4 + 200);}
+    const INIT_SPACE: usize = 8 + (1 + 2) + (1 + 8) + 1 + 1 + (4 + 200) + 32 + (1 + 1);
+}
