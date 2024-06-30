@@ -12,19 +12,22 @@ describe("capstone", () => {
   const program = anchor.workspace.Betting as Program<Betting>;
   const maker = anchor.web3.Keypair.generate();
   const bettorA = anchor.web3.Keypair.generate();
+  const bettorB = anchor.web3.Keypair.generate();
   console.log("Maker", maker.publicKey.toBase58());
   console.log("Bettor A", bettorA.publicKey.toBase58());
+  console.log("Bettor B", bettorB.publicKey.toBase58());
 
   // ?? Switch to generating market id
-  const market = anchor.web3.PublicKey.findProgramAddressSync(
+  const marketPda = anchor.web3.PublicKey.findProgramAddressSync(
     [Buffer.from("market"), Buffer.from("Test question")],
     program.programId
   )[0];
+  console.log("Market PDA", marketPda.toBase58());
 
   const treasury = anchor.web3.PublicKey.findProgramAddressSync(
-    [Buffer.from("treasury"), market.toBuffer()],
+    [Buffer.from("treasury"), marketPda.toBuffer()],
     program.programId
-  )[0];
+  )[0];console.log("Treasury PDA", treasury.toBase58());
   const systemProgram = anchor.web3.SystemProgram.programId;
 
   before("Air drop to users", async () => {
@@ -38,11 +41,15 @@ describe("capstone", () => {
       await provider.connection.getBalance(maker.publicKey)
     );
 
-    const tx2 = await provider.connection.requestAirdrop(
+    await provider.connection.requestAirdrop(
       bettorA.publicKey,
       100 * anchor.web3.LAMPORTS_PER_SOL
     );
-    await provider.connection.confirmTransaction(tx2);
+
+    await provider.connection.requestAirdrop(
+      bettorB.publicKey,
+      100 * anchor.web3.LAMPORTS_PER_SOL
+    );
   });
 
   it("Start a market", async () => {
@@ -54,7 +61,7 @@ describe("capstone", () => {
       .make("Test question", feeBps, closeUnix)
       .accountsPartial({
         maker: maker.publicKey,
-        market,
+        market: marketPda,
         treasury,
         systemProgram,
         tokenProgram: TOKEN_PROGRAM_ID,
@@ -63,7 +70,7 @@ describe("capstone", () => {
       .rpc();
     // console.log("Your transaction signature", tx);
 
-    const marketState = await program.account.market.fetch(market);
+    const marketState = await program.account.market.fetch(marketPda);
     console.log("Market state", marketState);
   });
 
@@ -71,15 +78,17 @@ describe("capstone", () => {
     const amount = new anchor.BN(1 * anchor.web3.LAMPORTS_PER_SOL);
 
     const betStatePda = anchor.web3.PublicKey.findProgramAddressSync(
-      [market.toBuffer(), bettorA.publicKey.toBuffer()],
+      [marketPda.toBuffer(), bettorA.publicKey.toBuffer()],
       program.programId
     )[0];
+
+    const treasuryBalanceBefore = await provider.connection.getBalance(treasury)
 
     const tx = await program.methods
       .placeBet(amount, true)
       .accountsPartial({
         bettor: bettorA.publicKey,
-        market,
+        market: marketPda,
         betState: betStatePda,
         treasury,
         systemProgram,
@@ -87,39 +96,73 @@ describe("capstone", () => {
       })
       .signers([bettorA])
       .rpc();
-
-    // const bet = await program.account.betState.fetch(betStatePda);
-    // console.log("Bet state", bet);
+    
+    const bet = await program.account.betState.fetch(betStatePda);
+    console.log("Bet state for user A", betStatePda);
+    
+    // Confirm that the treasury balance has increased by the amount bet
+    const treasuryBalanceAfter = await provider.connection.getBalance(treasury)
+    expect(treasuryBalanceAfter - treasuryBalanceBefore).to.equal(amount.toNumber())
   });
 
   it("User A cannot place a second bet", async () => {
     const amount = new anchor.BN(1 * anchor.web3.LAMPORTS_PER_SOL);
 
     const betStatePda = anchor.web3.PublicKey.findProgramAddressSync(
-      [market.toBuffer(), bettorA.publicKey.toBuffer()],
+      [marketPda.toBuffer(), bettorA.publicKey.toBuffer()],
       program.programId
     )[0];
 
     try {
+      const tx = await program.methods
+        .placeBet(amount, false)
+        .accountsPartial({
+          bettor: bettorA.publicKey,
+          market: marketPda,
+          betState: betStatePda,
+          treasury,
+          systemProgram,
+          tokenProgram: TOKEN_PROGRAM_ID,
+        })
+        .signers([bettorA])
+        .rpc();
+    } catch (error) {
+      const anchorError = error as anchor.AnchorError;
+      expect(anchorError.error.errorCode.code == "AlreadyPlacedBet");
+    }
+  });
+
+  it("User B Place a bet no", async () => {
+    const amount = new anchor.BN(2 * anchor.web3.LAMPORTS_PER_SOL);
+
+    const betStatePda = anchor.web3.PublicKey.findProgramAddressSync(
+      [marketPda.toBuffer(), bettorB.publicKey.toBuffer()],
+      program.programId
+    )[0];
+
+    const treasuryBalanceBefore = await provider.connection.getBalance(treasury)
+
     const tx = await program.methods
       .placeBet(amount, false)
       .accountsPartial({
-        bettor: bettorA.publicKey,
-        market,
+        bettor: bettorB.publicKey,
+        market: marketPda,
         betState: betStatePda,
         treasury,
         systemProgram,
         tokenProgram: TOKEN_PROGRAM_ID,
       })
-      .signers([bettorA])
+      .signers([bettorB])
       .rpc();
-    } catch (error) {
-      const anchorError = error as anchor.AnchorError
-      expect(anchorError.error.errorCode.code == 'AlreadyPlacedBet');
-    }
-  });
+      
+      const bet = await program.account.betState.fetch(betStatePda);
+      console.log("Bet state for user B", bet);
 
-  it("User B Place a bet yes", async () => {});
+      const treasuryBalanceAfter = await provider.connection.getBalance(treasury)
+      console.log("Updated treasury after user B", treasuryBalanceAfter);
+
+      expect(treasuryBalanceAfter - treasuryBalanceBefore).to.equal(amount.toNumber())
+  });
 
   it("Resolve bet", async () => {});
 

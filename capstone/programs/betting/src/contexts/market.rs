@@ -29,6 +29,7 @@ pub struct Make<'info> {
 impl<'info> Make<'info> {
     pub fn make(&mut self, question: String, fees_bps: Option<u16>, close_unix: Option<i64>, bumps: &MakeBumps) -> Result<()> {
 
+        //TODO: this seems dumb. Store question offchain? 
         require!(question.len() > 0 && question.len() < 200, BettingError::QuestionTooLong);
         
         self.market.set_inner(Market {
