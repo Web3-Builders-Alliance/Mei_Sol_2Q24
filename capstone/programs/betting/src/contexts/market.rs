@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token_interface::TokenInterface;
 
-use crate::{state::{Market,BetState}, errors::BettingError};
+use crate::{state::Market, errors::BettingError};
 
 #[derive(Accounts)]
 #[instruction(question: String)]
@@ -22,7 +22,6 @@ pub struct Make<'info> {
         bump
     )]
     pub treasury: SystemAccount<'info>,
-    pub bet_state: Account<'info, BetState>,
     pub system_program: Program<'info, System>,
     pub token_program: Interface<'info, TokenInterface>,
 }

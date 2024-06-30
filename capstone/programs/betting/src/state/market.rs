@@ -13,5 +13,4 @@ pub struct Market {
 }
 
 impl Space for Market {
-    const INIT_SPACE: usize = 8 + (1 + 2) + (1 + 8) + 1 + 1 + (4 + 200);
-}
+    const INIT_SPACE: usize = 8 + (1 + 2) + (1 + 8) + 1 + 1 + (4 + 200);}

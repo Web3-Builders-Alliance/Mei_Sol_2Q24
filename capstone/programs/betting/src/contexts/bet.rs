@@ -1,11 +1,9 @@
-use anchor_lang::prelude::*;
+use anchor_lang::{prelude::*, system_program::{transfer, Transfer}};
 use anchor_spl::token_interface::TokenInterface;
-use anchor_spl::token::{transfer, Transfer};
 
 use crate::{state::{Market,BetState}, errors::BettingError};
 
 #[derive(Accounts)]
-#[instruction(question: String)]
 pub struct Bet<'info> {
     #[account(mut)]
     pub bettor: Signer<'info>,
@@ -17,11 +15,12 @@ pub struct Bet<'info> {
     #[account(
         init_if_needed,
         payer = bettor,
-        seeds = [b"betstate", market.key().as_ref(), bettor.key().as_ref()],
+        seeds = [market.key().as_ref(), bettor.key().as_ref()],
         bump,
         space = BetState::INIT_SPACE,
     )]
     pub bet_state: Account<'info, BetState>,
+    #[account(mut)]
     #[account(
         seeds = [b"treasury", market.key().as_ref()],
         bump,
@@ -37,17 +36,18 @@ impl<'info> Bet<'info> {
         require!(self.bet_state.amount == 0, BettingError::AlreadyPlacedBet);
 
         self.bet_state.set_inner(BetState {
+            maker: self.bettor.key(),
             amount: _amount,
-            is_yes: is_yes,
+            is_yes,
             bump: bumps.bet_state,
         });
         
         // TODO: SOL transfer, make it USDC later
         let cpi_program = self.system_program.to_account_info();
+
         let cpi_accounts = Transfer {
             from: self.bettor.to_account_info(),
             to: self.treasury.to_account_info(),
-            authority: self.bettor.to_account_info(),
         };
         let cpi_ctx = CpiContext::new(cpi_program, cpi_accounts);
 
