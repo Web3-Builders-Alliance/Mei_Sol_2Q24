@@ -1,12 +1,10 @@
 use anchor_lang::prelude::*;
-use anchor_spl::token_interface::TokenInterface;
 use crate::{state::Market, errors::BettingError};
 
 #[derive(Accounts)]
 pub struct Resolve<'info> {
     #[account(mut)]
     pub resolver: Signer<'info>,
-    // ?? refactor to use id as seed?
     #[account(mut)]
     pub market: Account<'info, Market>
 }
