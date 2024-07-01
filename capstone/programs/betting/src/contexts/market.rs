@@ -42,6 +42,8 @@ impl<'info> Make<'info> {
             treasury_bump: bumps.treasury,
             resolver: resolver,
             resolved_as_yes: None,
+            yes_total: 0,
+            no_total: 0,
         });
 
         Ok(())

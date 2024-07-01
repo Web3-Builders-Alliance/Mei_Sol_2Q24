@@ -11,6 +11,7 @@ pub struct Bet<'info> {
         seeds = [b"market", market.question.as_str().as_bytes()],
         bump = market.bump,
     )]
+    #[account(mut)]
     pub market: Account<'info, Market>,
     #[account(
         init_if_needed,
@@ -41,6 +42,9 @@ impl<'info> Bet<'info> {
             is_yes,
             bump: bumps.bet_state,
         });
+
+        self.market.yes_total += if is_yes { _amount } else { 0 };
+        self.market.no_total += if !is_yes { _amount } else { 0 };
         
         // TODO: SOL transfer, make it USDC later
         let cpi_program = self.system_program.to_account_info();

@@ -105,6 +105,11 @@ describe("capstone", () => {
     // Confirm that the treasury balance has increased by the amount bet
     const treasuryBalanceAfter = await provider.connection.getBalance(treasury)
     expect(treasuryBalanceAfter - treasuryBalanceBefore).to.equal(amount.toNumber())
+    
+    // Confirm that the market state has been updated with side of bet
+    const marketState = await program.account.market.fetch(marketPda);
+    expect(marketState.yesTotal.toNumber()).to.equal(amount.toNumber());
+    expect(marketState.noTotal.toNumber()).to.equal(0);
   });
 
   it("User A cannot place a second bet", async () => {
@@ -162,8 +167,14 @@ describe("capstone", () => {
 
       const treasuryBalanceAfter = await provider.connection.getBalance(treasury)
       console.log("Updated treasury after user B", treasuryBalanceAfter);
-
       expect(treasuryBalanceAfter - treasuryBalanceBefore).to.equal(amount.toNumber())
+
+      // Confirm that the market state has been updated with side of bet
+      const marketState = await program.account.market.fetch(marketPda);
+      expect(marketState.noTotal.toNumber()).to.equal(amount.toNumber());
+
+      // previous state remains the same
+      expect(marketState.yesTotal.toNumber()).to.equal(1 * anchor.web3.LAMPORTS_PER_SOL);
   });
 
   it("Resolve bet yes", async () => {

@@ -6,3 +6,6 @@ pub use bet::*;
 
 pub mod resolve;
 pub use resolve::*;
+
+pub mod withdraw;
+pub use withdraw::*;
