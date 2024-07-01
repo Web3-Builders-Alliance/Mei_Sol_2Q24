@@ -46,12 +46,4 @@ impl<'info> Make<'info> {
 
         Ok(())
     }
-
-    pub fn resolve(&mut self, is_yes: bool) -> Result<()> {
-        // TODO: better way of checking auth?
-        require_keys_eq!(self.market.resolver, self.resolver.key(), BettingError::InvalidAuthority);
-
-        self.market.resolved_as_yes =  Some(is_yes);
-        Ok(())
-    }
 }

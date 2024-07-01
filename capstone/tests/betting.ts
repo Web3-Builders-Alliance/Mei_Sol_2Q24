@@ -166,7 +166,31 @@ describe("capstone", () => {
       expect(treasuryBalanceAfter - treasuryBalanceBefore).to.equal(amount.toNumber())
   });
 
-  it("Resolve bet", async () => {});
+  it("Resolve bet yes", async () => {
+    const marketStateBefore = await program.account.market.fetch(marketPda);
+    expect(marketStateBefore.resolvedAsYes).to.be.null;
+
+    const tx = await program.methods.resolveMarket(true)
+    .accounts({
+      resolver: resolver.publicKey, 
+      market: marketPda,
+    })
+    .signers([resolver])
+    .rpc()
+
+    console.log("Market resolved", tx)
+    const marketState = await program.account.market.fetch(marketPda);
+    expect(marketState.resolvedAsYes).to.be.true;
+  });
+
+  it("Resolve bet no", async () => {
+  });
+
+  it("Should throw error if already resolved", async () => {
+  });
+
+  it("Should throw error if initiated by non-resolver", async () => {
+  });
 
   it("Withdraw earnings", async () => {});
 });

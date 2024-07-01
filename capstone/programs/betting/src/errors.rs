@@ -11,4 +11,6 @@ pub enum BettingError {
     InvalidAuthority,
     #[msg("No authority set")]
     NoAuthoritySet,
+    #[msg("Already Resolved")]
+    AlreadyResolved,
 }

@@ -19,8 +19,15 @@ pub mod betting {
         Ok(())
     }
 
+    pub fn resolve_market(ctx: Context<Resolve>, is_yes: bool) -> Result<()> {
+        ctx.accounts.resolve_market(is_yes)?;
+        Ok(())
+    }
+
     pub fn place_bet(ctx: Context<Bet>, amount: u64, is_yes: bool) -> Result<()> {
         ctx.accounts.place_bet(amount, is_yes, &ctx.bumps)?;
         Ok(())
     }
+
+
 }
