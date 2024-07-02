@@ -12,5 +12,11 @@ pub enum BettingError {
     #[msg("No authority set")]
     NoAuthoritySet,
     #[msg("Already Resolved")]
-    AlreadyResolved,
+    AlreadyResolved,    
+    #[msg("Not Resolved")]
+    NotResolved,
+    #[msg("Not The Winner")]
+    NotTheWinner,
+    #[msg("No Bet Placed")]
+    NoBetPlaced,
 }

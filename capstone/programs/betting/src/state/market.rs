@@ -12,6 +12,7 @@ pub struct Market {
     pub question: String, 
     pub resolver: Pubkey,
     pub resolved_as_yes: Option<bool>,
+    // ?? is there a better way of tracking this?
     pub yes_total: u64,
     pub no_total: u64,
 }
