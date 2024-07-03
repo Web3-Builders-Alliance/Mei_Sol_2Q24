@@ -203,5 +203,7 @@ describe("capstone", () => {
   it("Should throw error if initiated by non-resolver", async () => {
   });
 
-  it("Withdraw earnings", async () => {});
+  it("Withdraw earnings", async () => {
+   
+  });
 });

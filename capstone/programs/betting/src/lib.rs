@@ -10,8 +10,6 @@ use contexts::*;
 #[program]
 pub mod betting {
 
-    use anchor_lang::solana_program::pubkey;
-
     use super::*;
 
     pub fn make(ctx: Context<Make>, question: String, fees_bps: Option<u16>, close_unix: Option<i64>, resolver: Pubkey) -> Result<()> {
@@ -26,6 +24,11 @@ pub mod betting {
 
     pub fn place_bet(ctx: Context<Bet>, amount: u64, is_yes: bool) -> Result<()> {
         ctx.accounts.place_bet(amount, is_yes, &ctx.bumps)?;
+        Ok(())
+    }
+
+    pub fn withdraw(ctx: Context<Withdraw>) -> Result<()> {
+        ctx.accounts.withdraw()?;
         Ok(())
     }
 
