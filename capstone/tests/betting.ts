@@ -10,10 +10,15 @@ describe("capstone", () => {
   anchor.setProvider(provider);
 
   const program = anchor.workspace.Betting as Program<Betting>;
+  const systemProgram = anchor.web3.SystemProgram.programId;
+
   const maker = anchor.web3.Keypair.generate();
   const bettorA = anchor.web3.Keypair.generate();
   const bettorB = anchor.web3.Keypair.generate();
   const resolver = anchor.web3.Keypair.generate();
+
+  const YES_AMOUNT = 1 * anchor.web3.LAMPORTS_PER_SOL;
+  const NO_AMOUNT = 2 * anchor.web3.LAMPORTS_PER_SOL;
   console.log("Maker", maker.publicKey.toBase58());
   console.log("Bettor A", bettorA.publicKey.toBase58());
   console.log("Bettor B", bettorB.publicKey.toBase58());
@@ -30,7 +35,6 @@ describe("capstone", () => {
     [Buffer.from("treasury"), marketPda.toBuffer()],
     program.programId
   )[0];console.log("Treasury PDA", treasury.toBase58());
-  const systemProgram = anchor.web3.SystemProgram.programId;
 
   before("Air drop to users", async () => {
     const tx = await provider.connection.requestAirdrop(
@@ -77,7 +81,7 @@ describe("capstone", () => {
   });
 
   it("User A Place a bet yes", async () => {
-    const amount = new anchor.BN(1 * anchor.web3.LAMPORTS_PER_SOL);
+    const amount = new anchor.BN(YES_AMOUNT);
 
     const betStatePda = anchor.web3.PublicKey.findProgramAddressSync(
       [marketPda.toBuffer(), bettorA.publicKey.toBuffer()],
@@ -98,22 +102,24 @@ describe("capstone", () => {
       })
       .signers([bettorA])
       .rpc();
-    
-    const bet = await program.account.betState.fetch(betStatePda);
-    console.log("Bet state for user A", betStatePda);
-    
-    // Confirm that the treasury balance has increased by the amount bet
-    const treasuryBalanceAfter = await provider.connection.getBalance(treasury)
-    expect(treasuryBalanceAfter - treasuryBalanceBefore).to.equal(amount.toNumber())
-    
-    // Confirm that the market state has been updated with side of bet
-    const marketState = await program.account.market.fetch(marketPda);
-    expect(marketState.yesTotal.toNumber()).to.equal(amount.toNumber());
-    expect(marketState.noTotal.toNumber()).to.equal(0);
+      
+      const bet = await program.account.betState.fetch(betStatePda);
+      console.log("Bet state for user A", bet);
+
+      const treasuryBalanceAfter = await provider.connection.getBalance(treasury)
+      console.log("Updated treasury after user B", treasuryBalanceAfter);
+      expect(treasuryBalanceAfter - treasuryBalanceBefore).to.equal(amount.toNumber())
+
+      // Confirm that the market state has been updated with side of bet
+      const marketState = await program.account.market.fetch(marketPda);
+
+      // previous state remains the same
+      expect(marketState.noTotal.toNumber()).to.equal(0);
+      expect(marketState.yesTotal.toNumber()).to.equal(YES_AMOUNT);
   });
 
   it("User A cannot place a second bet", async () => {
-    const amount = new anchor.BN(1 * anchor.web3.LAMPORTS_PER_SOL);
+    const amount = new anchor.BN(YES_AMOUNT);
 
     const betStatePda = anchor.web3.PublicKey.findProgramAddressSync(
       [marketPda.toBuffer(), bettorA.publicKey.toBuffer()],
@@ -140,7 +146,7 @@ describe("capstone", () => {
   });
 
   it("User B Place a bet no", async () => {
-    const amount = new anchor.BN(2 * anchor.web3.LAMPORTS_PER_SOL);
+    const amount = new anchor.BN(NO_AMOUNT);
 
     const betStatePda = anchor.web3.PublicKey.findProgramAddressSync(
       [marketPda.toBuffer(), bettorB.publicKey.toBuffer()],
@@ -174,7 +180,7 @@ describe("capstone", () => {
       expect(marketState.noTotal.toNumber()).to.equal(amount.toNumber());
 
       // previous state remains the same
-      expect(marketState.yesTotal.toNumber()).to.equal(1 * anchor.web3.LAMPORTS_PER_SOL);
+      expect(marketState.yesTotal.toNumber()).to.equal(YES_AMOUNT);
   });
 
   it("Resolve bet yes", async () => {
@@ -189,8 +195,9 @@ describe("capstone", () => {
     .signers([resolver])
     .rpc()
 
-    console.log("Market resolved", tx)
     const marketState = await program.account.market.fetch(marketPda);
+    console.log("Market resolved state", marketState)
+
     expect(marketState.resolvedAsYes).to.be.true;
   });
 
@@ -204,6 +211,33 @@ describe("capstone", () => {
   });
 
   it("Withdraw earnings", async () => {
-   
+
+    const betStatePda = anchor.web3.PublicKey.findProgramAddressSync(
+      [marketPda.toBuffer(), bettorA.publicKey.toBuffer()],
+      program.programId
+    )[0];
+
+    const balanceBefore = await provider.connection.getBalance(bettorA.publicKey);
+    console.log("Bettor A balance before", balanceBefore);
+
+    const tx = await program.methods.withdraw()
+    .accountsPartial({
+      bettor: bettorA.publicKey,
+      market: marketPda,
+      treasury,
+      betState: betStatePda,
+      systemProgram: systemProgram,
+      tokenProgram: TOKEN_PROGRAM_ID,
+    })
+    .signers([bettorA])
+    // to print error logs
+    .rpc({skipPreflight: true});
+
+    const balanceAfter = await provider.connection.getBalance(bettorA.publicKey);
+    console.log("Bettor A balance after", balanceAfter);
+
+    // TODO: why do I have extra lamports
+    console.log("Earnings", balanceAfter - balanceBefore);
+    console.log("Withdraw tx", tx);
   });
 });

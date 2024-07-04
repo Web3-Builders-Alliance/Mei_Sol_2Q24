@@ -28,6 +28,9 @@ impl<'info> Withdraw<'info> {
             self.market.resolved_as_yes.is_some(),
             BettingError::NotResolved
         );
+
+        msg!("{}, {}", self.market.resolved_as_yes.unwrap(), self.bet_state.is_yes);
+
         require!(
             self.market.resolved_as_yes.unwrap() == self.bet_state.is_yes,
             BettingError::NotTheWinner
@@ -41,6 +44,9 @@ impl<'info> Withdraw<'info> {
             true => self.bet_state.amount / self.market.yes_total * total,
             false => self.bet_state.amount / self.market.no_total * total,
         };
+
+        msg!("total {}, yes {}, no {}", total, self.market.yes_total, self.market.no_total);
+        msg!("bet_amount {}, winnings_due {}", self.bet_state.amount, share_of_winnings);
 
         let seeds = &[
             &b"treasury"[..],

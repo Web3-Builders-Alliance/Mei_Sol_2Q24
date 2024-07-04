@@ -39,7 +39,7 @@ impl<'info> Bet<'info> {
         self.bet_state.set_inner(BetState {
             maker: self.bettor.key(),
             amount: _amount,
-            is_yes,
+            is_yes: is_yes,
             bump: bumps.bet_state,
         });
 
