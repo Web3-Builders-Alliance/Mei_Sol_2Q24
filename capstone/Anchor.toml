@@ -7,11 +7,18 @@ skip-lint = false
 [programs.localnet]
 capstone = "9C68oQe7KLvqDpm1FgP2vsZEsMXodd9qDEqvccbN1S9R"
 
+[programs.devnet]
+capstone = "9C68oQe7KLvqDpm1FgP2vsZEsMXodd9qDEqvccbN1S9R"
+
 [registry]
 url = "https://api.apr.dev"
 
+# [provider]
+# cluster = "Localnet"
+# wallet = "~/.config/solana/id.json"
+
 [provider]
-cluster = "Localnet"
+cluster = "devnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]
