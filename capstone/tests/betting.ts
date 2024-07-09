@@ -19,17 +19,17 @@ describe("capstone", () => {
 
   const YES_AMOUNT = 1 * anchor.web3.LAMPORTS_PER_SOL;
   const NO_AMOUNT = 2 * anchor.web3.LAMPORTS_PER_SOL;
-  console.log("Maker", maker.publicKey.toBase58());
-  console.log("Bettor A", bettorA.publicKey.toBase58());
-  console.log("Bettor B", bettorB.publicKey.toBase58());
-  console.log("Resolver", bettorB.publicKey.toBase58());
+  // console.log("Maker", maker.publicKey.toBase58());
+  // console.log("Bettor A", bettorA.publicKey.toBase58());
+  // console.log("Bettor B", bettorB.publicKey.toBase58());
+  // console.log("Resolver", bettorB.publicKey.toBase58());
 
   // ?? Switch to generating market id
   const marketPda = anchor.web3.PublicKey.findProgramAddressSync(
     [Buffer.from("market"), Buffer.from("Test question")],
     program.programId
   )[0];
-  console.log("Market PDA", marketPda.toBase58());
+  // console.log("Market PDA", marketPda.toBase58());
 
   const treasury = anchor.web3.PublicKey.findProgramAddressSync(
     [Buffer.from("treasury"), marketPda.toBuffer()],
@@ -42,10 +42,10 @@ describe("capstone", () => {
       1 * anchor.web3.LAMPORTS_PER_SOL
     );
     await provider.connection.confirmTransaction(tx);
-    console.log(
-      "Maker balance: ",
-      await provider.connection.getBalance(maker.publicKey)
-    );
+    // console.log(
+    //   "Maker balance: ",
+    //   await provider.connection.getBalance(maker.publicKey)
+    // );
 
     await provider.connection.requestAirdrop(
       bettorA.publicKey,
@@ -77,7 +77,7 @@ describe("capstone", () => {
     // console.log("Your transaction signature", tx);
 
     const marketState = await program.account.market.fetch(marketPda);
-    console.log("Market state", marketState);
+    console.log("Market stated. State", marketState);
   });
 
   it("User A Place a bet yes", async () => {
@@ -104,10 +104,10 @@ describe("capstone", () => {
       .rpc();
       
       const bet = await program.account.betState.fetch(betStatePda);
-      console.log("Bet state for user A", bet);
+      console.log("User A placed a bet. Bet state for user A", bet);
 
       const treasuryBalanceAfter = await provider.connection.getBalance(treasury)
-      console.log("Updated treasury after user B", treasuryBalanceAfter);
+      console.log("Updated treasury balance after user A made bet ", treasuryBalanceAfter);
       expect(treasuryBalanceAfter - treasuryBalanceBefore).to.equal(amount.toNumber())
 
       // Confirm that the market state has been updated with side of bet
@@ -196,7 +196,7 @@ describe("capstone", () => {
     .rpc()
 
     const marketState = await program.account.market.fetch(marketPda);
-    console.log("Market resolved state", marketState)
+    console.log("Market resolved. State", marketState)
 
     expect(marketState.resolvedAsYes).to.be.true;
   });
@@ -234,10 +234,10 @@ describe("capstone", () => {
     .rpc({skipPreflight: true});
 
     const balanceAfter = await provider.connection.getBalance(bettorA.publicKey);
-    console.log("Bettor A balance after", balanceAfter);
+    console.log("Bettor A withdrew. Balance after", balanceAfter);
 
     // TODO: why do I have extra lamports
-    console.log("Earnings", balanceAfter - balanceBefore);
-    console.log("Withdraw tx", tx);
+    // console.log("Earnings", balanceAfter - balanceBefore);
+    // console.log("Withdraw tx", tx);
   });
 });

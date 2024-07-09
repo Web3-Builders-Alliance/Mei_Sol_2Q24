@@ -13,13 +13,13 @@ capstone = "9C68oQe7KLvqDpm1FgP2vsZEsMXodd9qDEqvccbN1S9R"
 [registry]
 url = "https://api.apr.dev"
 
-# [provider]
-# cluster = "Localnet"
-# wallet = "~/.config/solana/id.json"
-
 [provider]
-cluster = "devnet"
+cluster = "Localnet"
 wallet = "~/.config/solana/id.json"
+
+# [provider]
+# cluster = "devnet"
+# wallet = "~/.config/solana/id.json"
 
 [scripts]
 test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
